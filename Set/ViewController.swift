@@ -14,12 +14,13 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         for index in cardButtons.indices {
+            applyAttributesTo(game.playingSetCardDeck[index])
             cardButtons[index].isEnabled = true
             cardButtons[index].layer.cornerRadius = 8.0
             cardButtons[index].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
-            cardButtons[index].setTitle(game.playingSetCardDeck[index].shape, for: UIControl.State.normal)
+            cardButtons[index].setAttributedTitle(NSAttributedString(string: game.playingSetCardDeck[index].shape, attributes: attributes), for: UIControl.State.normal)
             if index >= 12 {
-                cardButtons[index].setTitle("", for: UIControl.State.normal)
+                cardButtons[index].setAttributedTitle(nil, for: UIControl.State.normal)
                 cardButtons[index].backgroundColor = #colorLiteral(red: 0.9952403903, green: 0.7589642406, blue: 0.1794864237, alpha: 0)
                 cardButtons[index].isEnabled = false
             } else {
@@ -39,10 +40,23 @@ class ViewController: UIViewController {
     var selectedIndices: [Int] = []
     var isMatchedAsSet: Bool = false
     
+    var score: Int = 0 {
+        didSet {
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
+    
+    var attributes: [NSAttributedString.Key : Any] = [
+        .foregroundColor : UIColor.black.withAlphaComponent(1),
+        .strokeColor : UIColor.black,
+        .strokeWidth : -8.0 // negative number here would nean fill (positive means outline)
+    ]
+    
     @IBAction func startNewGame(_ sender: UIButton) {
         cardsOnScreen.removeAll()
         selectedIndices.removeAll()
         game = SetGame()
+        score = 0
         self.viewDidLoad()
     }
     
@@ -82,6 +96,7 @@ class ViewController: UIViewController {
                     selectedIndices.removeAll { (selectedIndex: Int) -> Bool in
                         return selectedIndex == cardIndex
                     }
+                    score -= 1
                 } else {
                     game.selectedCards.append(card)
                     selectedIndices.append(cardIndex)
@@ -102,17 +117,21 @@ class ViewController: UIViewController {
         
         if !game.playingSetCardDeck.isEmpty {
             if cards.isEmpty {
+                // Replace selected cards if they matched with new ones from the Playing Deck.
                 for index in game.selectedCards.indices {
-                    cardButtons[selectedIndices[index]].setTitle(game.selectedCards[index].shape, for: UIControl.State.normal)
+                    applyAttributesTo(game.selectedCards[index])
+                    cardButtons[selectedIndices[index]].setAttributedTitle(NSAttributedString(string: game.selectedCards[index].shape, attributes: attributes), for: UIControl.State.normal)
                     cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
+                    cardsOnScreen[selectedIndices[index]] = game.selectedCards[index]
                 }
                 game.selectedCards.removeAll()
                 selectedIndices.removeAll()
             } else {
                 // Add 3 more cards to the UI.
                 for index in cardButtons.indices {
-                    if cardButtons[index].currentTitle == "" && !cards.isEmpty {
-                        cardButtons[index].setTitle(cards.first!.shape, for: UIControl.State.normal)
+                    if cardButtons[index].currentAttributedTitle == nil && !cards.isEmpty {
+                        applyAttributesTo(cards.first!)
+                        cardButtons[index].setAttributedTitle(NSAttributedString(string: cards.first!.shape, attributes: attributes), for: UIControl.State.normal)
                         cardButtons[index].layer.backgroundColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
                         cardButtons[index].isEnabled = true
                         cardsOnScreen.append(cards.removeFirst())
@@ -142,12 +161,43 @@ class ViewController: UIViewController {
                     // Disable card button if no more cards in Playing Deck.
                     cardButtons[selectedIndices[index]].isEnabled = false
                 }
+                
+                score += 3
             } else {
                 cardButtons[selectedIndices[index]].layer.borderWidth = 3.0
                 cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 0.1491314173, blue: 0, alpha: 1)
                 isMatchedAsSet = false
+                
+                score -= 5
             }
         }
+    }
+    
+    /// Apply attributes to given card.
+    func applyAttributesTo(_ card: SetCard) {
+        // Color.
+        switch card.color {
+        case .green:
+            attributes[.strokeColor] = UIColor.green
+        case .purple:
+            attributes[.strokeColor] = UIColor.purple
+        case .red:
+            attributes[.strokeColor] = UIColor.red
+        }
+        
+        // Shading style.
+        switch card.shading {
+        case .open:
+            attributes[.foregroundColor] = (attributes[.strokeColor] as! UIColor).withAlphaComponent(0.4)
+            attributes[.strokeWidth] = 8.0
+        case .striped:
+            attributes[.foregroundColor] = (attributes[.strokeColor] as! UIColor).withAlphaComponent(0.15)
+            attributes[.strokeWidth] = -8.0
+        case .solid:
+            attributes[.foregroundColor] = (attributes[.strokeColor] as! UIColor).withAlphaComponent(1)
+            attributes[.strokeWidth] = -8.0
+        }
+        
     }
 }
 
