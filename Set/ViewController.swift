@@ -28,8 +28,11 @@ class ViewController: UIViewController {
             }
         }
         dealButton.isEnabled = true
+        hintButton.isEnabled = true
+        availableSetOnScreen = game.searchForSet(on: cardsOnScreen)
     }
 
+    @IBOutlet weak var hintButton: UIButton!
     @IBOutlet weak var dealButton: UIButton!
     @IBOutlet weak var iPhoneLabel: UILabel!
     @IBOutlet weak var scoreLabel: UILabel!
@@ -39,6 +42,7 @@ class ViewController: UIViewController {
     var cardsOnScreen: [SetCard] = []
     var selectedIndices: [Int] = []
     var isMatchedAsSet: Bool = false
+    var timeOfPlay: Date = Date()
     
     var score: Int = 0 {
         didSet {
@@ -46,16 +50,35 @@ class ViewController: UIViewController {
         }
     }
     
-    var attributes: [NSAttributedString.Key : Any] = [
-        .foregroundColor : UIColor.black.withAlphaComponent(1),
-        .strokeColor : UIColor.black,
-        .strokeWidth : -8.0 // negative number here would nean fill (positive means outline)
+    var attributes: [NSAttributedString.Key: Any] = [
+        .foregroundColor: UIColor.black.withAlphaComponent(1),
+        .strokeColor: UIColor.black,
+        .strokeWidth: -8.0 // Negative number here would nean fill (positive means outline).
     ]
+    
+    var availableSetOnScreen: [Int: [SetCard]] = [:] {
+        didSet {
+            // Play against the iPhone.
+            let counter: Int = game.matchedCards.count
+            iPhoneLabel.text = "iPhone 🤔"
+            Timer.scheduledTimer(withTimeInterval: TimeInterval(Int.random(in: 10...20)), repeats: true) { (_) in
+                self.iPhoneLabel.text = "iPhone 😁"
+                Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { (_) in
+                    if counter < self.game.matchedCards.count {
+                        self.iPhoneLabel.text = "iPhone 😢"
+                    } else {
+                        self.iPhoneLabel.text = "iPhone 😂"
+                    }
+                }
+            }
+        }
+    }
     
     @IBAction func startNewGame(_ sender: UIButton) {
         cardsOnScreen.removeAll()
         selectedIndices.removeAll()
         game = SetGame()
+        timeOfPlay = Date()
         score = 0
         self.viewDidLoad()
     }
@@ -96,7 +119,7 @@ class ViewController: UIViewController {
                     selectedIndices.removeAll { (selectedIndex: Int) -> Bool in
                         return selectedIndex == cardIndex
                     }
-                    score -= 1
+                    score -= 5
                 } else {
                     game.selectedCards.append(card)
                     selectedIndices.append(cardIndex)
@@ -127,6 +150,10 @@ class ViewController: UIViewController {
                 game.selectedCards.removeAll()
                 selectedIndices.removeAll()
             } else {
+                // Penalize if there is a Set available in the visible cards.
+                if !game.searchForSet(on: cardsOnScreen).isEmpty {
+                    score -= 10
+                }
                 // Add 3 more cards to the UI.
                 for index in cardButtons.indices {
                     if cardButtons[index].currentAttributedTitle == nil && !cards.isEmpty {
@@ -142,6 +169,32 @@ class ViewController: UIViewController {
             if cardsOnScreen.count == 24 {
                 dealButton.isEnabled = false
             }
+            hintButton.isEnabled = true
+            availableSetOnScreen = game.searchForSet(on: cardsOnScreen)
+        }
+    }
+    
+    /// "cheat" button that a struggling user could use to find a Set.
+    @IBAction func hint(_ sender: UIButton) {
+        for index in cardButtons.indices {
+            cardButtons[index].isHighlighted = false
+        }
+        
+        let indexOfSet: Int = availableSetOnScreen.count.random
+        
+        if !availableSetOnScreen.isEmpty {
+            for card in availableSetOnScreen[indexOfSet]! {
+                if game.matchedCards.contains(card) {
+                    for index in cardButtons.indices {
+                        cardButtons[index].isHighlighted = false
+                    }
+                    break
+                } else {
+                    cardButtons[cardsOnScreen.firstIndex(of: card)!].isHighlighted = true
+                }
+            }
+        } else {
+            hintButton.isEnabled = false
         }
     }
     
@@ -157,20 +210,24 @@ class ViewController: UIViewController {
                 
                 if !game.playingSetCardDeck.isEmpty {
                     dealButton.isEnabled = true
+                    hintButton.isEnabled = false
                 } else {
                     // Disable card button if no more cards in Playing Deck.
                     cardButtons[selectedIndices[index]].isEnabled = false
+                    hintButton.isEnabled = true
                 }
                 
-                score += 3
+                // Factor "speed of play".
+                score += 15 * ((60 / -Int(timeOfPlay.timeIntervalSinceNow)) > 0 ? (60 / -Int(timeOfPlay.timeIntervalSinceNow)) : 1)
             } else {
                 cardButtons[selectedIndices[index]].layer.borderWidth = 3.0
                 cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 0.1491314173, blue: 0, alpha: 1)
                 isMatchedAsSet = false
                 
-                score -= 5
+                score -= 5 * ((-Int(timeOfPlay.timeIntervalSinceNow)) < 60 ? (-Int(timeOfPlay.timeIntervalSinceNow)) : 1)
             }
         }
+        timeOfPlay = Date()
     }
     
     /// Apply attributes to given card.
@@ -201,3 +258,15 @@ class ViewController: UIViewController {
     }
 }
 
+extension Int {
+    /// Returns a random Integer selected from a range of 0 to this value.
+    var random: Int {
+        if self > 0 {
+            return Int(arc4random_uniform(UInt32(self)))
+        } else if self < 0 {
+            return -Int(arc4random_uniform(UInt32(self)))
+        } else {
+            return 0
+        }
+    }
+}

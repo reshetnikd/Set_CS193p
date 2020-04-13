@@ -255,16 +255,26 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p5r-zB-7sv">
+                                <rect key="frame" x="31.5" y="803.5" width="30" height="30"/>
+                                <state key="normal" title="Hint"/>
+                                <connections>
+                                    <action selector="hint:" destination="BYZ-38-t0r" eventType="touchUpInside" id="mPn-F3-gnV"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
                             <constraint firstItem="T0j-Io-o1V" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="4CY-eE-Nf3"/>
+                            <constraint firstItem="p5r-zB-7sv" firstAttribute="centerX" secondItem="ZIi-WK-6qQ" secondAttribute="centerX" id="7GX-RS-vxh"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ZIi-WK-6qQ" secondAttribute="bottom" id="AdN-d9-aBa"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="H6l-mg-IsF" secondAttribute="bottom" id="D6E-mx-HB9"/>
                             <constraint firstItem="H6l-mg-IsF" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="DwE-cj-r0M"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="hiY-XL-1Ng" secondAttribute="trailing" constant="20" id="HFF-xf-G2m"/>
+                            <constraint firstItem="ZIi-WK-6qQ" firstAttribute="top" secondItem="p5r-zB-7sv" secondAttribute="bottom" constant="8" symbolic="YES" id="IiV-2t-n4T"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="T0j-Io-o1V" secondAttribute="trailing" constant="20" id="KE0-N6-XeY"/>
                             <constraint firstItem="hiY-XL-1Ng" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="H6l-mg-IsF" secondAttribute="trailing" constant="8" symbolic="YES" id="OpX-RU-J6t"/>
+                            <constraint firstItem="p5r-zB-7sv" firstAttribute="top" relation="greaterThanOrEqual" secondItem="T0j-Io-o1V" secondAttribute="bottom" constant="8" symbolic="YES" id="RLq-gg-ucD"/>
                             <constraint firstItem="T0j-Io-o1V" firstAttribute="top" secondItem="NBh-zH-Qse" secondAttribute="bottom" constant="8" id="RT8-vf-F3c"/>
                             <constraint firstItem="NBh-zH-Qse" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="W64-e1-Wvd"/>
                             <constraint firstItem="H6l-mg-IsF" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ZIi-WK-6qQ" secondAttribute="trailing" constant="8" symbolic="YES" id="Zfs-SM-88U"/>
@@ -277,6 +287,7 @@
                     </view>
                     <connections>
                         <outlet property="dealButton" destination="H6l-mg-IsF" id="74T-kO-tk4"/>
+                        <outlet property="hintButton" destination="p5r-zB-7sv" id="Sge-t9-Xqw"/>
                         <outlet property="iPhoneLabel" destination="ZIi-WK-6qQ" id="RvC-vr-Ney"/>
                         <outlet property="scoreLabel" destination="hiY-XL-1Ng" id="ih0-g1-yJz"/>
                         <outletCollection property="cardButtons" destination="mDu-eI-lev" collectionClass="NSMutableArray" id="fRt-Lz-jy4"/>

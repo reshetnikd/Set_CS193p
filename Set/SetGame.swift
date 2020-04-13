@@ -50,6 +50,40 @@ struct SetGame {
         return deal
     }
     
+    /// Search for cards on screen, of which the Set is consist.
+    mutating func searchForSet(on screen: [SetCard]) -> [Int: [SetCard]] {
+        let previouslyMatched: [SetCard] = matchedCards
+        var mark: Int = 0
+        var counter: Int = matchedCards.count
+        var found: [Int: [SetCard]] = [:]
+        var temp: [SetCard] = []
+        
+        for index in screen.indices {
+            temp.append(screen[index])
+            for index in 1...(screen.count - 1) {
+                if !temp.contains(screen[index]) {
+                    temp.append(screen[index])
+                    for index in 2...(screen.count - 1) {
+                        if !temp.contains(screen[index]) {
+                            temp.append(screen[index])
+                            checkSetCards(from: temp)
+                            if counter < matchedCards.count {
+                                found[mark] = Array(matchedCards.dropFirst(counter))
+                                counter = matchedCards.count
+                                mark += 1
+                            }
+                            temp.removeLast()
+                        }
+                    }
+                    temp.removeLast()
+                }
+            }
+            temp.removeLast()
+        }
+        matchedCards = previouslyMatched
+        return found
+    }
+    
     /// Create deck of 81 SetCard's.
     init() {
         for number in SetCard.Number.all {
