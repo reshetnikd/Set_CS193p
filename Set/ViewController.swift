@@ -14,6 +14,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         for index in cardButtons.indices {
+            cardButtons[index].isEnabled = true
             cardButtons[index].layer.cornerRadius = 8.0
             cardButtons[index].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
             cardButtons[index].setTitle(game.playingSetCardDeck[index].shape, for: UIControl.State.normal)
@@ -25,8 +26,10 @@ class ViewController: UIViewController {
                 cardsOnScreen.append(game.playingSetCardDeck.remove(at: index))
             }
         }
+        dealButton.isEnabled = true
     }
 
+    @IBOutlet weak var dealButton: UIButton!
     @IBOutlet weak var iPhoneLabel: UILabel!
     @IBOutlet weak var scoreLabel: UILabel!
     @IBOutlet var cardButtons: [UIButton]!
@@ -34,7 +37,7 @@ class ViewController: UIViewController {
     var game: SetGame = SetGame()
     var cardsOnScreen: [SetCard] = []
     var selectedIndices: [Int] = []
-    var isMatched: Bool = false
+    var isMatchedAsSet: Bool = false
     
     @IBAction func startNewGame(_ sender: UIButton) {
         cardsOnScreen.removeAll()
@@ -49,20 +52,28 @@ class ViewController: UIViewController {
             let card: SetCard = cardsOnScreen[cardIndex]
             
             if game.selectedCards.count == 3 {
-                if isMatched {
-                    dealMoreCards(sender)
+                if isMatchedAsSet && game.selectedCards.contains(card) {
+                    // No card should be selected.
+                    return
                 } else {
-                    for index in selectedIndices {
-                        cardButtons[index].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
+                    if isMatchedAsSet {
+                        dealMoreCards(sender)
+                    } else {
+                        // Deselect 3 non-matching cards.
+                        for index in selectedIndices {
+                            cardButtons[index].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
+                        }
                     }
+                    // Select chosen card.
+                    game.selectedCards.removeAll()
+                    selectedIndices.removeAll()
+                    game.selectedCards.append(card)
+                    selectedIndices.append(cardIndex)
+                    cardButtons[cardIndex].layer.borderWidth = 2.0
+                    cardButtons[cardIndex].layer.borderColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
                 }
-                game.selectedCards.removeAll()
-                selectedIndices.removeAll()
-                game.selectedCards.append(card)
-                selectedIndices.append(cardIndex)
-                cardButtons[cardIndex].layer.borderWidth = 2.0
-                cardButtons[cardIndex].layer.borderColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             } else {
+                // Deselect currently selected card either select new one.
                 if game.selectedCards.contains(card) {
                     cardButtons[cardIndex].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
                     game.selectedCards.removeAll { (selectedCard: SetCard) -> Bool in
@@ -89,21 +100,28 @@ class ViewController: UIViewController {
     @IBAction func dealMoreCards(_ sender: UIButton) {
         var cards: [SetCard] = game.dealSetCard()
         
-        if cards.isEmpty {
-            for index in game.selectedCards.indices {
-                cardButtons[selectedIndices[index]].setTitle(game.selectedCards[index].shape, for: UIControl.State.normal)
-                cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
+        if !game.playingSetCardDeck.isEmpty {
+            if cards.isEmpty {
+                for index in game.selectedCards.indices {
+                    cardButtons[selectedIndices[index]].setTitle(game.selectedCards[index].shape, for: UIControl.State.normal)
+                    cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
+                }
+                game.selectedCards.removeAll()
+                selectedIndices.removeAll()
+            } else {
+                // Add 3 more cards to the UI.
+                for index in cardButtons.indices {
+                    if cardButtons[index].currentTitle == "" && !cards.isEmpty {
+                        cardButtons[index].setTitle(cards.first!.shape, for: UIControl.State.normal)
+                        cardButtons[index].layer.backgroundColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+                        cardButtons[index].isEnabled = true
+                        cardsOnScreen.append(cards.removeFirst())
+                    }
+                }
             }
-            game.selectedCards.removeAll()
-            selectedIndices.removeAll()
-        }
-        
-        for index in cardButtons.indices {
-            if cardButtons[index].currentTitle == "" && !cards.isEmpty {
-                cardButtons[index].setTitle(cards.first!.shape, for: UIControl.State.normal)
-                cardButtons[index].layer.backgroundColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-                cardButtons[index].isEnabled = true
-                cardsOnScreen.append(cards.removeFirst())
+            // Disable Deal Button if no more room on the UI.
+            if cardsOnScreen.count == 24 {
+                dealButton.isEnabled = false
             }
         }
     }
@@ -116,11 +134,18 @@ class ViewController: UIViewController {
             if game.matchedCards.contains(game.selectedCards[index]) {
                 cardButtons[selectedIndices[index]].layer.borderWidth = 3.0
                 cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 0, green: 0.9768045545, blue: 0, alpha: 1)
-                isMatched = true
+                isMatchedAsSet = true
+                
+                if !game.playingSetCardDeck.isEmpty {
+                    dealButton.isEnabled = true
+                } else {
+                    // Disable card button if no more cards in Playing Deck.
+                    cardButtons[selectedIndices[index]].isEnabled = false
+                }
             } else {
                 cardButtons[selectedIndices[index]].layer.borderWidth = 3.0
                 cardButtons[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 0.1491314173, blue: 0, alpha: 1)
-                isMatched = false
+                isMatchedAsSet = false
             }
         }
     }

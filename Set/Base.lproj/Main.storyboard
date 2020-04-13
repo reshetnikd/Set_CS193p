@@ -276,6 +276,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="dealButton" destination="H6l-mg-IsF" id="74T-kO-tk4"/>
                         <outlet property="iPhoneLabel" destination="ZIi-WK-6qQ" id="RvC-vr-Ney"/>
                         <outlet property="scoreLabel" destination="hiY-XL-1Ng" id="ih0-g1-yJz"/>
                         <outletCollection property="cardButtons" destination="mDu-eI-lev" collectionClass="NSMutableArray" id="fRt-Lz-jy4"/>

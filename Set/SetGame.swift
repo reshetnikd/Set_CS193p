@@ -34,17 +34,17 @@ struct SetGame {
     mutating func dealSetCard() -> [SetCard] {
         var deal: [SetCard] = []
         
-        if selectedCards.count == 3 {
+        if selectedCards.count == 3, !playingSetCardDeck.isEmpty {
             for index in selectedCards.indices {
-                if matchedCards.contains(selectedCards[index]), playingSetCardDeck.count > 0 {
-                    selectedCards[index] = playingSetCardDeck.remove(at: index)
-                } else if playingSetCardDeck.count > 0 {
-                    deal.append(playingSetCardDeck.remove(at: index))
+                if matchedCards.contains(selectedCards[index]) {
+                    selectedCards[index] = playingSetCardDeck.removeFirst()
+                } else {
+                    deal.append(playingSetCardDeck.removeFirst())
                 }
             }
-        } else if playingSetCardDeck.count > 0 {
-            for index in 0...2 {
-                deal.append(playingSetCardDeck.remove(at: index))
+        } else if !playingSetCardDeck.isEmpty {
+            for _ in 0...2 {
+                deal.append(playingSetCardDeck.removeFirst())
             }
         }
         
