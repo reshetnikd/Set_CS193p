@@ -15,12 +15,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="iPhone" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ZIi-WK-6qQ">
-                                <rect key="frame" x="20" y="841.5" width="52.5" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Score:0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hiY-XL-1Ng">
                                 <rect key="frame" x="334.5" y="841.5" width="59.5" height="20.5"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -47,36 +41,47 @@
                                     <action selector="startNewGame:" destination="BYZ-38-t0r" eventType="touchUpInside" id="DQF-3E-dug"/>
                                 </connections>
                             </button>
+                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wpX-Gx-FSa" customClass="GridView" customModule="Set" customModuleProvider="target">
+                                <rect key="frame" x="20" y="86" width="374" height="703"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ENL-Z1-ynZ">
+                                <rect key="frame" x="20" y="835" width="83" height="33"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <state key="normal" title="Player One">
+                                    <color key="titleColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="changePlayer:" destination="BYZ-38-t0r" eventType="touchUpInside" id="efZ-zb-dch"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="p5r-zB-7sv">
-                                <rect key="frame" x="31.5" y="803.5" width="30" height="30"/>
+                                <rect key="frame" x="46" y="797" width="31" height="30"/>
                                 <state key="normal" title="Hint"/>
                                 <connections>
                                     <action selector="hint:" destination="BYZ-38-t0r" eventType="touchUpInside" id="mPn-F3-gnV"/>
                                 </connections>
                             </button>
-                            <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wpX-Gx-FSa" customClass="GridView" customModule="Set" customModuleProvider="target">
-                                <rect key="frame" x="20" y="86" width="374" height="709.5"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </view>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="0.57637232540000005" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.9882352941176471" green="0.71372549019607845" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="p5r-zB-7sv" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="46" id="14s-Rd-Blr"/>
+                            <constraint firstItem="p5r-zB-7sv" firstAttribute="centerX" secondItem="ENL-Z1-ynZ" secondAttribute="centerX" id="2Hi-Si-ia0"/>
                             <constraint firstItem="wpX-Gx-FSa" firstAttribute="top" secondItem="NBh-zH-Qse" secondAttribute="bottom" constant="8" symbolic="YES" id="6Ru-F2-gNu"/>
-                            <constraint firstItem="p5r-zB-7sv" firstAttribute="centerX" secondItem="ZIi-WK-6qQ" secondAttribute="centerX" id="7GX-RS-vxh"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ZIi-WK-6qQ" secondAttribute="bottom" id="AdN-d9-aBa"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="H6l-mg-IsF" secondAttribute="bottom" id="D6E-mx-HB9"/>
                             <constraint firstItem="H6l-mg-IsF" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="DwE-cj-r0M"/>
+                            <constraint firstItem="ENL-Z1-ynZ" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" constant="6" id="E6R-cR-ogX"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="hiY-XL-1Ng" secondAttribute="trailing" constant="20" id="HFF-xf-G2m"/>
-                            <constraint firstItem="ZIi-WK-6qQ" firstAttribute="top" secondItem="p5r-zB-7sv" secondAttribute="bottom" constant="8" symbolic="YES" id="IiV-2t-n4T"/>
                             <constraint firstItem="hiY-XL-1Ng" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="H6l-mg-IsF" secondAttribute="trailing" constant="8" symbolic="YES" id="OpX-RU-J6t"/>
+                            <constraint firstItem="p5r-zB-7sv" firstAttribute="top" secondItem="wpX-Gx-FSa" secondAttribute="bottom" constant="8" symbolic="YES" id="Sdi-fo-Yd3"/>
                             <constraint firstItem="NBh-zH-Qse" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="W64-e1-Wvd"/>
-                            <constraint firstItem="p5r-zB-7sv" firstAttribute="top" secondItem="wpX-Gx-FSa" secondAttribute="bottom" constant="8" symbolic="YES" id="WK1-7A-KHe"/>
-                            <constraint firstItem="H6l-mg-IsF" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ZIi-WK-6qQ" secondAttribute="trailing" constant="8" symbolic="YES" id="Zfs-SM-88U"/>
                             <constraint firstItem="wpX-Gx-FSa" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="dCC-sz-1Ve"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="hiY-XL-1Ng" secondAttribute="bottom" id="efX-1a-0h0"/>
-                            <constraint firstItem="ZIi-WK-6qQ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="fh6-hq-pTP"/>
+                            <constraint firstItem="ENL-Z1-ynZ" firstAttribute="top" secondItem="p5r-zB-7sv" secondAttribute="bottom" constant="8" id="lUf-Kl-K2e"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="wpX-Gx-FSa" secondAttribute="trailing" constant="20" id="ouE-Kl-pjc"/>
+                            <constraint firstItem="ENL-Z1-ynZ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="qQP-dl-F4B"/>
                             <constraint firstItem="NBh-zH-Qse" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="uhj-YB-tX0"/>
+                            <constraint firstItem="H6l-mg-IsF" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ENL-Z1-ynZ" secondAttribute="trailing" constant="8" symbolic="YES" id="x5e-yo-oYa"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
@@ -84,7 +89,7 @@
                         <outlet property="board" destination="wpX-Gx-FSa" id="hsl-W6-R5c"/>
                         <outlet property="dealButton" destination="H6l-mg-IsF" id="74T-kO-tk4"/>
                         <outlet property="hintButton" destination="p5r-zB-7sv" id="Sge-t9-Xqw"/>
-                        <outlet property="iPhoneLabel" destination="ZIi-WK-6qQ" id="RvC-vr-Ney"/>
+                        <outlet property="playerButton" destination="ENL-Z1-ynZ" id="xP6-dX-52c"/>
                         <outlet property="scoreLabel" destination="hiY-XL-1Ng" id="ih0-g1-yJz"/>
                     </connections>
                 </viewController>

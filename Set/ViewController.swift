@@ -43,7 +43,7 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var hintButton: UIButton!
     @IBOutlet weak var dealButton: UIButton!
-    @IBOutlet weak var iPhoneLabel: UILabel!
+    @IBOutlet weak var playerButton: UIButton!
     @IBOutlet weak var scoreLabel: UILabel!
     @IBOutlet weak var board: GridView!
     
@@ -52,28 +52,18 @@ class ViewController: UIViewController {
     var selectedIndices: [Int] = []
     var isMatchedAsSet: Bool = false
     var timeOfPlay: Date = Date()
+    var availableSetOnScreen: [Int: [SetCard]] = [:]
+    var currentPlayerId: Int = 0
     
-    var score: Int = 0 {
+    var playerOne: Player = Player(id: 0, score: 0) {
         didSet {
-            scoreLabel.text = "Score: \(score)"
+            scoreLabel.text = "Score: \(playerOne.score)/\(playerTwo.score)"
         }
     }
     
-    var availableSetOnScreen: [Int: [SetCard]] = [:] {
+    var playerTwo: Player = Player(id: 1, score: 0) {
         didSet {
-            // Play against the iPhone.
-            let counter: Int = game.matchedCards.count
-            iPhoneLabel.text = "iPhone 🤔"
-            Timer.scheduledTimer(withTimeInterval: TimeInterval(Int.random(in: 10...20)), repeats: true) { (_) in
-                self.iPhoneLabel.text = "iPhone 😁"
-                Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { (_) in
-                    if counter < self.game.matchedCards.count {
-                        self.iPhoneLabel.text = "iPhone 😢"
-                    } else {
-                        self.iPhoneLabel.text = "iPhone 😂"
-                    }
-                }
-            }
+            scoreLabel.text = "Score: \(playerOne.score)/\(playerTwo.score)"
         }
     }
     
@@ -116,7 +106,12 @@ class ViewController: UIViewController {
                     selectedIndices.removeAll { (selectedIndex: Int) -> Bool in
                         return selectedIndex == cardIndex
                     }
-                    score -= 5
+                    // Scoring the current player who made the move.
+                    if currentPlayerId == 0 {
+                        playerOne.score -= 2
+                    } else if currentPlayerId == 1 {
+                        playerTwo.score -= 2
+                    }
                 } else {
                     game.selectedCards.append(card)
                     selectedIndices.append(cardIndex)
@@ -156,7 +151,11 @@ class ViewController: UIViewController {
             } else {
                 // Penalize if there is a Set available in the visible cards.
                 if !game.searchForSet(on: cardsOnScreen).isEmpty {
-                    score -= 10
+                    if currentPlayerId == 0 {
+                        playerOne.score -= 10
+                    } else if currentPlayerId == 1 {
+                        playerTwo.score -= 10
+                    }
                 }
                 // Add 3 more cards to the UI.
                 if !cards.isEmpty {
@@ -183,6 +182,7 @@ class ViewController: UIViewController {
         }
     }
     
+    /// Rotation gesture action shuffles cards view representation according to each model component.
     @objc func reshuffle(sender: UIRotationGestureRecognizer) {
         switch sender.state {
         case UIGestureRecognizer.State.ended:
@@ -203,18 +203,42 @@ class ViewController: UIViewController {
         }
     }
     
+    /// Start new game.
     @IBAction func startNewGame(_ sender: UIButton) {
         cardsOnScreen.removeAll()
         selectedIndices.removeAll()
         board.cardViews.removeAll()
         game = SetGame()
-        timeOfPlay = Date()
-        score = 0
+        playerOne.score = 0
+        playerTwo.score = 0
         self.viewDidLoad()
     }
     
+    /// Deal 3 new cards to the board.
     @IBAction func dealCardsToBoard(_ sender: UIButton) {
         dealMoreCards()
+    }
+    
+    /// Change current Player that makes move, previously selected Player automatically turns back after 15 seconds.
+    @IBAction func changePlayer(_ sender: UIButton) {
+        switch currentPlayerId {
+        case 0:
+            currentPlayerId = 1
+            playerButton.setAttributedTitle(NSAttributedString(string: "Player Two", attributes: [NSAttributedString.Key.foregroundColor : UIColor.blue]), for: UIControl.State.normal)
+            Timer.scheduledTimer(withTimeInterval: 15, repeats: false) {
+                (_) in self.currentPlayerId = 0
+                self.playerButton.setAttributedTitle(NSAttributedString(string: "Player One", attributes: [NSAttributedString.Key.foregroundColor : UIColor.red]), for: UIControl.State.normal)
+            }
+        case 1:
+            currentPlayerId = 0
+            playerButton.setAttributedTitle(NSAttributedString(string: "Player One", attributes: [NSAttributedString.Key.foregroundColor : UIColor.red]), for: UIControl.State.normal)
+            Timer.scheduledTimer(withTimeInterval: 15, repeats: false) {
+                (_) in self.currentPlayerId = 1
+                self.playerButton.setAttributedTitle(NSAttributedString(string: "Player Two", attributes: [NSAttributedString.Key.foregroundColor : UIColor.blue]), for: UIControl.State.normal)
+            }
+        default:
+            break
+        }
     }
     
     /// "cheat" button that a struggling user could use to find a Set.
@@ -237,7 +261,7 @@ class ViewController: UIViewController {
                 } else {
                     // highlight for 1 second.
                     board.cardViews[cardsOnScreen.firstIndex(of: card)!].alpha = 0.5
-                    Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { (timer) in
+                    Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { (_) in
                         self.board.cardViews[self.cardsOnScreen.firstIndex(of: card)!].alpha = 1.0
                     }
                 }
@@ -268,20 +292,35 @@ class ViewController: UIViewController {
                     hintButton.isEnabled = true
                 }
                 
-                // Factor "speed of play".
-                score += 15 * ((60 / -Int(timeOfPlay.timeIntervalSinceNow)) > 0 ? (60 / -Int(timeOfPlay.timeIntervalSinceNow)) : 1)
+                // Scoring points for correctly chosen Set.
+                if currentPlayerId == 0 {
+                    playerOne.score += 15
+                } else if currentPlayerId == 1 {
+                    playerTwo.score += 15
+                }
             } else {
                 board.cardViews[selectedIndices[index]].layer.cornerRadius = 8.0
                 board.cardViews[selectedIndices[index]].layer.borderWidth = 3.0
                 board.cardViews[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 0.1491314173, blue: 0, alpha: 1)
                 isMatchedAsSet = false
                 
-                score -= 5 * ((-Int(timeOfPlay.timeIntervalSinceNow)) < 60 ? (-Int(timeOfPlay.timeIntervalSinceNow)) : 1)
+                // Penalize for 3 non-matching Set cards.
+                if currentPlayerId == 0 {
+                    playerOne.score -= 5
+                } else if currentPlayerId == 1 {
+                    playerTwo.score -= 5
+                }
             }
         }
         timeOfPlay = Date()
     }
     
+}
+
+// Additional structure for multiplayer game.
+struct Player {
+    let id: Int
+    var score: Int
 }
 
 extension Int {
