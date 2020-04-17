@@ -32,6 +32,13 @@ class ViewController: UIViewController {
         dealButton.isEnabled = true
         hintButton.isEnabled = true
         availableSetOnScreen = game.searchForSet(on: cardsOnScreen)
+        // A swipe down gesture deal more cards.
+        let swipe: UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(dealMoreCards))
+        swipe.direction = UISwipeGestureRecognizer.Direction.down
+        view.addGestureRecognizer(swipe)
+        // A rotation gesture cause all of cards to reshuffle.
+        let rotate: UIRotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(reshuffle(sender:)))
+        view.addGestureRecognizer(rotate)
     }
 
     @IBOutlet weak var hintButton: UIButton!
@@ -127,52 +134,8 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func startNewGame(_ sender: UIButton) {
-        cardsOnScreen.removeAll()
-        selectedIndices.removeAll()
-        board.cardViews.removeAll()
-        game = SetGame()
-        timeOfPlay = Date()
-        score = 0
-        self.viewDidLoad()
-    }
-    
-    @IBAction func dealCardsToBoard(_ sender: UIButton) {
-        dealMoreCards()
-    }
-    
-    /// "cheat" button that a struggling user could use to find a Set.
-    @IBAction func hint(_ sender: UIButton) {
-        for index in board.cardViews.indices {
-            board.cardViews[index].alpha = 1.0
-        }
-        // Search for available Set on screen and indicate it if it does.
-        availableSetOnScreen = game.searchForSet(on: cardsOnScreen)
-        
-        if !availableSetOnScreen.isEmpty {
-            let indexOfSet: Int = (availableSetOnScreen.count - 1).random
-            
-            for card in availableSetOnScreen[indexOfSet]! {
-                if game.matchedCards.contains(card) {
-                    for index in board.cardViews.indices {
-                        board.cardViews[index].alpha = 1.0
-                    }
-                    break
-                } else {
-                    // highlight for 1 second.
-                    board.cardViews[cardsOnScreen.firstIndex(of: card)!].alpha = 0.5
-                    Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { (timer) in
-                        self.board.cardViews[self.cardsOnScreen.firstIndex(of: card)!].alpha = 1.0
-                    }
-                }
-            }
-        } else {
-            hintButton.isEnabled = false
-        }
-    }
-    
     /// Replace the selected cards if they are match or add 3 cards to the game.
-    func dealMoreCards() {
+    @objc func dealMoreCards() {
         if !game.playingSetCardDeck.isEmpty {
             var cards: [SetCard] = game.dealSetCard()
             
@@ -217,6 +180,70 @@ class ViewController: UIViewController {
             if game.playingSetCardDeck.isEmpty {
                 dealButton.isEnabled = false
             }
+        }
+    }
+    
+    @objc func reshuffle(sender: UIRotationGestureRecognizer) {
+        switch sender.state {
+        case UIGestureRecognizer.State.ended:
+            var lastIndex: Int = cardsOnScreen.count - 1
+            
+            while lastIndex > 0 {
+                let randomIndex: Int = lastIndex.random
+                board.cardViews.swapAt(lastIndex, randomIndex)
+                cardsOnScreen.swapAt(lastIndex, randomIndex)
+                lastIndex -= 1
+            }
+            
+            for index in selectedIndices.indices {
+                selectedIndices[index] = cardsOnScreen.firstIndex(of: game.selectedCards[index])!
+            }
+        default:
+            break
+        }
+    }
+    
+    @IBAction func startNewGame(_ sender: UIButton) {
+        cardsOnScreen.removeAll()
+        selectedIndices.removeAll()
+        board.cardViews.removeAll()
+        game = SetGame()
+        timeOfPlay = Date()
+        score = 0
+        self.viewDidLoad()
+    }
+    
+    @IBAction func dealCardsToBoard(_ sender: UIButton) {
+        dealMoreCards()
+    }
+    
+    /// "cheat" button that a struggling user could use to find a Set.
+    @IBAction func hint(_ sender: UIButton) {
+        for index in board.cardViews.indices {
+            board.cardViews[index].alpha = 1.0
+        }
+        // Search for available Set on screen and indicate it if it does.
+        availableSetOnScreen = game.searchForSet(on: cardsOnScreen)
+        
+        if !availableSetOnScreen.isEmpty {
+            let indexOfSet: Int = (availableSetOnScreen.count - 1).random
+            
+            for card in availableSetOnScreen[indexOfSet]! {
+                if game.matchedCards.contains(card) {
+                    for index in board.cardViews.indices {
+                        board.cardViews[index].alpha = 1.0
+                    }
+                    break
+                } else {
+                    // highlight for 1 second.
+                    board.cardViews[cardsOnScreen.firstIndex(of: card)!].alpha = 0.5
+                    Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { (timer) in
+                        self.board.cardViews[self.cardsOnScreen.firstIndex(of: card)!].alpha = 1.0
+                    }
+                }
+            }
+        } else {
+            hintButton.isEnabled = false
         }
     }
     
