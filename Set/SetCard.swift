@@ -11,8 +11,8 @@ import Foundation
 struct SetCard: Equatable {
     let number: Int
     let shape: String
-    let shading: Shading
-    let color: Color
+    let shading: String
+    let color: String
     
     enum Number: Int {
         case one = 1
@@ -23,22 +23,22 @@ struct SetCard: Equatable {
     }
     
     enum Shape: String {
-        case triangle = "▲"
-        case square = "■"
-        case circle = "●"
+        case diamond
+        case squiggle
+        case oval
         
-        static var all: [Shape] = [Shape.triangle, Shape.square, Shape.circle]
+        static var all: [Shape] = [Shape.diamond, Shape.squiggle, Shape.oval]
     }
     
-    enum Shading: Equatable {
+    enum Shading: String {
         case striped
         case solid
-        case open
+        case outlined
         
-        static var all: [Shading] = [Shading.striped, Shading.solid, Shading.open]
+        static var all: [Shading] = [Shading.striped, Shading.solid, Shading.outlined]
     }
     
-    enum Color: Equatable {
+    enum Color: String {
         case red
         case green
         case purple
