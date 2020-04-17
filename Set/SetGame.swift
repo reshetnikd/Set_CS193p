@@ -21,7 +21,7 @@ struct SetGame {
     /// Checking if selected cards are match according to game of Set rules.
     mutating func checkSetCards(from selected: [SetCard]) {
         if selected.count == 3 {
-            if (((selected[0].number == selected[1].number) && (selected[1].number == selected[2].number)) || ((selected[0].number != selected[1].number) && (selected[0].number != selected[2].number) && (selected[1].number != selected[2].number))) && (((selected[0].shading == selected[1].shading) && (selected[1].shading == selected[2].shading)) || ((selected[0].shading != selected[1].shading) && (selected[0].shading != selected[2].shading) && (selected[1].shading != selected[2].shading))) && (((selected[0].color == selected[1].color) && (selected[1].color == selected[2].color)) || ((selected[0].color != selected[1].color) && (selected[0].color != selected[2].color) && (selected[1].color != selected[2].color))) && (((selected[0].shape.first! == selected[1].shape.first!) && (selected[1].shape.first! == selected[2].shape.first!)) || ((selected[0].shape.first! != selected[1].shape.first!) && (selected[0].shape.first! != selected[2].shape.first!) && (selected[1].shape.first! != selected[2].shape.first!))) {
+            if (((selected[0].number == selected[1].number) && (selected[1].number == selected[2].number)) || ((selected[0].number != selected[1].number) && (selected[0].number != selected[2].number) && (selected[1].number != selected[2].number))) && (((selected[0].shading == selected[1].shading) && (selected[1].shading == selected[2].shading)) || ((selected[0].shading != selected[1].shading) && (selected[0].shading != selected[2].shading) && (selected[1].shading != selected[2].shading))) && (((selected[0].color == selected[1].color) && (selected[1].color == selected[2].color)) || ((selected[0].color != selected[1].color) && (selected[0].color != selected[2].color) && (selected[1].color != selected[2].color))) && (((selected[0].shape == selected[1].shape) && (selected[1].shape == selected[2].shape)) || ((selected[0].shape != selected[1].shape) && (selected[0].shape != selected[2].shape) && (selected[1].shape != selected[2].shape))) {
                 for index in selected.indices {
                     matchedCards.append(selected[index])
                 }
@@ -90,7 +90,7 @@ struct SetGame {
             for shape in SetCard.Shape.all {
                 for shade in SetCard.Shading.all {
                     for color in SetCard.Color.all {
-                        playingSetCardDeck.append(SetCard(number: number.rawValue, shape: String(repeating: shape.rawValue, count: number.rawValue), shading: shade, color: color))
+                        playingSetCardDeck.append(SetCard(number: number.rawValue, shape: shape.rawValue, shading: shade.rawValue, color: color.rawValue))
                     }
                 }
             }
