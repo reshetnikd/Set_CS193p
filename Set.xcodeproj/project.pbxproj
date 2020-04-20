@@ -13,6 +13,7 @@
 		352BA60F23F7299B00EB2D14 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 352BA60D23F7299B00EB2D14 /* Main.storyboard */; };
 		352BA61123F7299C00EB2D14 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 352BA61023F7299C00EB2D14 /* Assets.xcassets */; };
 		352BA61423F7299C00EB2D14 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 352BA61223F7299C00EB2D14 /* LaunchScreen.storyboard */; };
+		3550DC67244DF82700773645 /* CardBehavior.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3550DC66244DF82700773645 /* CardBehavior.swift */; };
 		357C018B2448E5BB00E35F10 /* Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C018A2448E5BB00E35F10 /* Grid.swift */; };
 		357C018D2448E73B00E35F10 /* GridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C018C2448E73B00E35F10 /* GridView.swift */; };
 		357C018F2448E7BA00E35F10 /* SetCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C018E2448E7BA00E35F10 /* SetCardView.swift */; };
@@ -29,6 +30,7 @@
 		352BA61023F7299C00EB2D14 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		352BA61323F7299C00EB2D14 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		352BA61523F7299C00EB2D14 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3550DC66244DF82700773645 /* CardBehavior.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardBehavior.swift; sourceTree = "<group>"; };
 		357C018A2448E5BB00E35F10 /* Grid.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Grid.swift; sourceTree = "<group>"; };
 		357C018C2448E73B00E35F10 /* GridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridView.swift; sourceTree = "<group>"; };
 		357C018E2448E7BA00E35F10 /* SetCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCardView.swift; sourceTree = "<group>"; };
@@ -70,6 +72,7 @@
 				352BA60923F7299B00EB2D14 /* SceneDelegate.swift */,
 				357C018A2448E5BB00E35F10 /* Grid.swift */,
 				357C018C2448E73B00E35F10 /* GridView.swift */,
+				3550DC66244DF82700773645 /* CardBehavior.swift */,
 				357C018E2448E7BA00E35F10 /* SetCardView.swift */,
 				35EFD95D244387E200BE6096 /* SetCard.swift */,
 				35EFD95F2443919600BE6096 /* SetGame.swift */,
@@ -155,6 +158,7 @@
 			files = (
 				352BA60C23F7299B00EB2D14 /* ViewController.swift in Sources */,
 				352BA60823F7299B00EB2D14 /* AppDelegate.swift in Sources */,
+				3550DC67244DF82700773645 /* CardBehavior.swift in Sources */,
 				35EFD9602443919600BE6096 /* SetGame.swift in Sources */,
 				357C018D2448E73B00E35F10 /* GridView.swift in Sources */,
 				35EFD95E244387E200BE6096 /* SetCard.swift in Sources */,

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIDynamicAnimatorDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +28,8 @@ class ViewController: UIViewController {
             cardView.color = card.color
             board.cardViews.append(cardView)
             board.cardViews[index].draw(board.bounds) // Need to call draw method to trim black corners.
+            // Animation block.
+            dealAnimation(card: cardView, delayTime: Double(index + 1))
         }
         dealButton.isEnabled = true
         hintButton.isEnabled = true
@@ -39,6 +41,11 @@ class ViewController: UIViewController {
         // A rotation gesture cause all of cards to reshuffle.
         let rotate: UIRotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(reshuffle(sender:)))
         view.addGestureRecognizer(rotate)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        cardBehavior.spotToSnap = view.convert(scoreLabel.center, to: board)
     }
 
     @IBOutlet weak var hintButton: UIButton!
@@ -54,6 +61,7 @@ class ViewController: UIViewController {
     var timeOfPlay: Date = Date()
     var availableSetOnScreen: [Int: [SetCard]] = [:]
     var currentPlayerId: Int = 0
+    var tempCards: [SetCardView] = []
     
     var playerOne: Player = Player(id: 0, score: 0) {
         didSet {
@@ -66,6 +74,15 @@ class ViewController: UIViewController {
             scoreLabel.text = "Score: \(playerOne.score)/\(playerTwo.score)"
         }
     }
+    
+    // UIDynamicAnimator properties.
+    private lazy var animator: UIDynamicAnimator = {
+        let animator: UIDynamicAnimator = UIDynamicAnimator(referenceView: board)
+        animator.delegate = self
+        return animator
+    }()
+    
+    private lazy var cardBehavior: CardBehavior = CardBehavior(in: animator)
     
     /// Allow to select cards to try to match as a Set, also support deselection.
     @objc func selectCard(_ sender: UITapGestureRecognizer) {
@@ -137,17 +154,45 @@ class ViewController: UIViewController {
             if cards.isEmpty {
                 // Replace selected cards if they matched with new ones from the Playing Deck.
                 for index in game.selectedCards.indices {
+                    // Copy cardView for dynamic animator.
+                    let tempCard: SetCardView = duplicateCard(board.cardViews[selectedIndices[index]])
+                    tempCard.draw(board.bounds)
+                    tempCards.append(tempCard)
+                    board.addSubview(tempCard)
+                    // Perform "flyaway" and snapping to the "discard pile" animation.
+                    cardBehavior.addItem(tempCard)
+                    // Cards replacement.
                     board.cardViews[selectedIndices[index]].number = game.selectedCards[index].number
                     board.cardViews[selectedIndices[index]].shape = game.selectedCards[index].shape
-                    board.cardViews[selectedIndices[index]].color = game.selectedCards[index].color
                     board.cardViews[selectedIndices[index]].shading = game.selectedCards[index].shading
+                    board.cardViews[selectedIndices[index]].color = game.selectedCards[index].color
                     board.cardViews[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
                     board.cardViews[selectedIndices[index]].alpha = 1.0
                     board.cardViews[selectedIndices[index]].draw(board.bounds) // Need to call draw method to trim black corners.
+                    // Animation block.
+                    let animatedCardIndex: Int = selectedIndices[index]
+                    board.cardViews[animatedCardIndex].alpha = 0
+                    board.cardViews[animatedCardIndex].isFaceUp = false
+                    dealAnimation(card: board.cardViews[animatedCardIndex], delayTime: Double(index + 1)) {
+                        self.board.cardViews.forEach { (cardView) in
+                            cardView.isUserInteractionEnabled = false
+                        }
+                    }
                     cardsOnScreen[selectedIndices[index]] = game.selectedCards[index]
                 }
-                game.selectedCards.removeAll()
-                selectedIndices.removeAll()
+                Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { (_) in
+                    self.game.selectedCards.removeAll()
+                    self.selectedIndices.removeAll()
+                    self.board.cardViews.forEach { (cardView) in
+                        cardView.isUserInteractionEnabled = true
+                        if cardView.layer.borderWidth == 2.0 && cardView.layer.borderColor == #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1) {
+                            let index = self.board.cardViews.firstIndex(of: cardView)
+                            let card: SetCard = self.cardsOnScreen[index!]
+                            self.game.selectedCards.append(card)
+                            self.selectedIndices.append(index!)
+                        }
+                    }
+                }
             } else {
                 // Penalize if there is a Set available in the visible cards.
                 if !game.searchForSet(on: cardsOnScreen).isEmpty {
@@ -171,6 +216,9 @@ class ViewController: UIViewController {
                         cardView.shading = card.shading
                         board.cardViews.append(cardView)
                         board.cardViews.last!.draw(board.bounds) // Need to call draw method to trim black corners.
+                        // Animation block.
+                        let divider: Double = cards.count > 0 ? Double(cards.count) : 0.4
+                        dealAnimation(card: cardView, delayTime: Double(cards.count + 1) / divider)
                     }
                 }
             }
@@ -196,7 +244,9 @@ class ViewController: UIViewController {
             }
             
             for index in selectedIndices.indices {
-                selectedIndices[index] = cardsOnScreen.firstIndex(of: game.selectedCards[index])!
+                if let selectedCard = cardsOnScreen.firstIndex(of: game.selectedCards[index]) {
+                    selectedIndices[index] = selectedCard
+                }
             }
         default:
             break
@@ -271,8 +321,81 @@ class ViewController: UIViewController {
         }
     }
     
+    /// Animate "discard pile" vanishing.
+    public func dynamicAnimatorDidPause(_ animator: UIDynamicAnimator) {
+        tempCards.forEach { (tempCard) in
+            UIView.transition(
+                with: tempCard,
+                duration: 0.2,
+                options: UIView.AnimationOptions.transitionFlipFromRight,
+                animations: {
+                    tempCard.isFaceUp = false
+                },
+                completion: { (_) in
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.2,
+                        delay: 0.2,
+                        options: UIView.AnimationOptions.curveEaseIn,
+                        animations: {
+                            tempCard.alpha = 0
+                        },
+                        completion: { (_) in
+                            self.cardBehavior.removeItem(tempCard)
+                            tempCard.removeFromSuperview()
+                        }
+                    )
+                }
+            )
+        }
+    }
+    
+    /// Animate deal card action.
+    private func dealAnimation(card: SetCardView, delayTime: Double, optional: @escaping () -> Void = {}) {
+        let cardCenter: CGPoint = card.center
+        card.center = view.convert(dealButton.center, to: board)
+        card.alpha = 0
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.5,
+            delay: 0.2 * delayTime,
+            options: UIView.AnimationOptions.curveEaseInOut,
+            animations: {
+                optional()
+                card.isUserInteractionEnabled = false
+                card.center = cardCenter
+                card.alpha = 1
+            },
+            completion: { (_) in
+                UIView.transition(
+                    with: card,
+                    duration: 0.2,
+                    options: UIView.AnimationOptions.transitionFlipFromLeft,
+                    animations: {
+                        card.isFaceUp = true
+                    },
+                    completion: { (_) in
+                        card.isUserInteractionEnabled = true
+                    }
+                )
+            }
+        )
+    }
+    
+    /// Return copy of given SetCardView.
+    private func duplicateCard(_ card: SetCardView) -> SetCardView {
+        let duplicate: SetCardView = SetCardView()
+        duplicate.bounds = card.bounds
+        duplicate.frame = card.frame
+        duplicate.alpha = 1
+        duplicate.number = card.number
+        duplicate.shape = card.shape
+        duplicate.shading = card.shading
+        duplicate.color = card.color
+        duplicate.isFaceUp = true
+        return duplicate
+    }
+    
     /// Uses coloration to indicate whether cards are match or mismatch.
-    func checkAndIndicateCards() {
+    private func checkAndIndicateCards() {
         game.checkSetCards(from: game.selectedCards)
         
         for index in game.selectedCards.indices {
@@ -287,8 +410,27 @@ class ViewController: UIViewController {
                     hintButton.isEnabled = false
                 } else {
                     // Remove matched cards if no more cards in Playing Deck.
-                    cardsOnScreen.remove(at: selectedIndices[index])
-                    board.cardViews.remove(at: selectedIndices[index])
+                    // Copy cardView for dynamic animator.
+                    let tempCard: SetCardView = duplicateCard(board.cardViews[selectedIndices[index]])
+                    tempCard.draw(board.bounds)
+                    tempCards.append(tempCard)
+                    board.addSubview(tempCard)
+                    // Perform "flyaway" and snapping to the "discard pile" animation.
+                    cardBehavior.addItem(tempCard)
+                    selectedIndices.sort { (index, comparable) -> Bool in
+                        return index > comparable
+                    }
+                    board.cardViews.forEach { (cardView) in
+                        cardView.isUserInteractionEnabled = false
+                    }
+                    board.cardViews[selectedIndices[index]].isHidden = true
+                    Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { (_) in
+                        self.board.cardViews.remove(at: self.selectedIndices[index])
+                        self.cardsOnScreen.remove(at: self.selectedIndices[index])
+                        self.board.cardViews.forEach { (cardView) in
+                            cardView.isUserInteractionEnabled = true
+                        }
+                    }
                     hintButton.isEnabled = true
                 }
                 
