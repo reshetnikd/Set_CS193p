@@ -33,12 +33,14 @@ class GridView: UIView {
         for card in cardViews {
             card.removeFromSuperview()
         }
+        layoutIfNeeded()
     }
     
     private func addSubviews() {
         for card in cardViews {
             addSubview(card)
         }
+        layoutIfNeeded()
     }
     
     override func layoutSubviews() {
@@ -49,7 +51,15 @@ class GridView: UIView {
         for row in 0..<grid.dimensions.rowCount {
             for column in 0..<grid.dimensions.columnCount {
                 if cardViews.count > (row * grid.dimensions.columnCount + column) {
-                    cardViews[row * grid.dimensions.columnCount + column].frame = grid[row, column]!.insetBy(dx: Coefficient.offsetX, dy: Coefficient.offsetY)
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.2,
+                        delay: 0.2,
+                        options: UIView.AnimationOptions.curveEaseInOut,
+                        animations: {
+                            self.cardViews[row * grid.dimensions.columnCount + column].frame = grid[row, column]!.insetBy(dx: Coefficient.offsetX, dy: Coefficient.offsetY)
+                        },
+                        completion: nil
+                    )
                 }
             }
         }

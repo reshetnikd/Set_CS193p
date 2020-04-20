@@ -20,8 +20,10 @@ class SetCardView: UIView {
         roundedRect.addClip()
         UIColor.white.setFill()
         roundedRect.fill()
-        // Draw figures on self.
-        drawContent()
+        // Draw figures on self if card isFaceUp.
+        if isFaceUp {
+            drawContent()
+        }
     }
     
     var number: Int? {
@@ -40,6 +42,11 @@ class SetCardView: UIView {
         }
     }
     var color: String? {
+        didSet {
+            setNeedsDisplay()
+        }
+    }
+    var isFaceUp: Bool = false {
         didSet {
             setNeedsDisplay()
         }

@@ -28,6 +28,33 @@ class ViewController: UIViewController {
             cardView.color = card.color
             board.cardViews.append(cardView)
             board.cardViews[index].draw(board.bounds) // Need to call draw method to trim black corners.
+            // Animation block.
+            let cardCenter: CGPoint = cardView.center
+            cardView.center = view.convert(dealButton.center, to: board)
+            cardView.alpha = 0
+            UIViewPropertyAnimator.runningPropertyAnimator(
+                withDuration: 0.5,
+                delay: 0.2 * Double(index + 1),
+                options: UIView.AnimationOptions.curveEaseInOut,
+                animations: {
+                    cardView.isUserInteractionEnabled = false
+                    cardView.center = cardCenter
+                    cardView.alpha = 1
+                },
+                completion: { (_) in
+                    UIView.transition(
+                        with: cardView,
+                        duration: 0.2,
+                        options: UIView.AnimationOptions.transitionFlipFromLeft,
+                        animations: {
+                            cardView.isFaceUp = true
+                        },
+                        completion: { (_) in
+                            cardView.isUserInteractionEnabled = true
+                        }
+                    )
+                }
+            )
         }
         dealButton.isEnabled = true
         hintButton.isEnabled = true
@@ -144,10 +171,46 @@ class ViewController: UIViewController {
                     board.cardViews[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
                     board.cardViews[selectedIndices[index]].alpha = 1.0
                     board.cardViews[selectedIndices[index]].draw(board.bounds) // Need to call draw method to trim black corners.
+                    // Animation block.
+                    let cardCenter: CGPoint = board.cardViews[selectedIndices[index]].center
+                    let animatedCardIndex: Int = selectedIndices[index]
+                    board.cardViews[animatedCardIndex].center = view.convert(dealButton.center, to: board)
+                    board.cardViews[animatedCardIndex].alpha = 0
+                    board.cardViews[animatedCardIndex].isFaceUp = false
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.5,
+                        delay: 0.2 * Double(index + 1),
+                        options: UIView.AnimationOptions.curveEaseInOut,
+                        animations: {
+                            self.board.cardViews.forEach({ (cardView) in
+                                cardView.isUserInteractionEnabled = false
+                            })
+                            self.board.cardViews[animatedCardIndex].center = cardCenter
+                            self.board.cardViews[animatedCardIndex].alpha = 1
+                        },
+                        completion: { (_) in
+                            UIView.transition(
+                                with: self.board.cardViews[animatedCardIndex],
+                                duration: 0.2,
+                                options: UIView.AnimationOptions.transitionFlipFromLeft,
+                                animations: {
+                                    self.board.cardViews[animatedCardIndex].isFaceUp = true
+                                },
+                                completion: { (_) in
+                                    self.board.cardViews[animatedCardIndex].isUserInteractionEnabled = true
+                                }
+                            )
+                        }
+                    )
                     cardsOnScreen[selectedIndices[index]] = game.selectedCards[index]
                 }
-                game.selectedCards.removeAll()
-                selectedIndices.removeAll()
+                Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { (_) in
+                    self.game.selectedCards.removeAll()
+                    self.selectedIndices.removeAll()
+                    self.board.cardViews.forEach { (cardView) in
+                        cardView.isUserInteractionEnabled = true
+                    }
+                }
             } else {
                 // Penalize if there is a Set available in the visible cards.
                 if !game.searchForSet(on: cardsOnScreen).isEmpty {
@@ -171,6 +234,34 @@ class ViewController: UIViewController {
                         cardView.shading = card.shading
                         board.cardViews.append(cardView)
                         board.cardViews.last!.draw(board.bounds) // Need to call draw method to trim black corners.
+                        // Animation block.
+                        let cardCenter: CGPoint = cardView.center
+                        let divider: Double = cards.count > 0 ? Double(cards.count) : 0.4
+                        cardView.center = view.convert(dealButton.center, to: board)
+                        cardView.alpha = 0
+                        UIViewPropertyAnimator.runningPropertyAnimator(
+                            withDuration: 0.5,
+                            delay: 0.2 * Double(cards.count + 1) / divider,
+                            options: UIView.AnimationOptions.curveEaseInOut,
+                            animations: {
+                                cardView.isUserInteractionEnabled = false
+                                cardView.center = cardCenter
+                                cardView.alpha = 1
+                            },
+                            completion: { (_) in
+                                UIView.transition(
+                                    with: cardView,
+                                    duration: 0.2,
+                                    options: UIView.AnimationOptions.transitionFlipFromLeft,
+                                    animations: {
+                                        cardView.isFaceUp = true
+                                    },
+                                    completion: { (_) in
+                                        cardView.isUserInteractionEnabled = true
+                                    }
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -287,8 +378,9 @@ class ViewController: UIViewController {
                     hintButton.isEnabled = false
                 } else {
                     // Remove matched cards if no more cards in Playing Deck.
-                    cardsOnScreen.remove(at: selectedIndices[index])
+                    // TODO: Correct removing cards from game board.
                     board.cardViews.remove(at: selectedIndices[index])
+                    cardsOnScreen.remove(at: selectedIndices[index])
                     hintButton.isEnabled = true
                 }
                 
