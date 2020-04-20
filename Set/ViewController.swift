@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIDynamicAnimatorDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,6 +67,11 @@ class ViewController: UIViewController {
         let rotate: UIRotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(reshuffle(sender:)))
         view.addGestureRecognizer(rotate)
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        cardBehavior.spotToSnap = view.convert(scoreLabel.center, to: board)
+    }
 
     @IBOutlet weak var hintButton: UIButton!
     @IBOutlet weak var dealButton: UIButton!
@@ -81,6 +86,7 @@ class ViewController: UIViewController {
     var timeOfPlay: Date = Date()
     var availableSetOnScreen: [Int: [SetCard]] = [:]
     var currentPlayerId: Int = 0
+    var tempCards: [SetCardView] = []
     
     var playerOne: Player = Player(id: 0, score: 0) {
         didSet {
@@ -93,6 +99,15 @@ class ViewController: UIViewController {
             scoreLabel.text = "Score: \(playerOne.score)/\(playerTwo.score)"
         }
     }
+    
+    // UIDynamicAnimator properties.
+    private lazy var animator: UIDynamicAnimator = {
+        let animator: UIDynamicAnimator = UIDynamicAnimator(referenceView: board)
+        animator.delegate = self
+        return animator
+    }()
+    
+    private lazy var cardBehavior: CardBehavior = CardBehavior(in: animator)
     
     /// Allow to select cards to try to match as a Set, also support deselection.
     @objc func selectCard(_ sender: UITapGestureRecognizer) {
@@ -164,10 +179,25 @@ class ViewController: UIViewController {
             if cards.isEmpty {
                 // Replace selected cards if they matched with new ones from the Playing Deck.
                 for index in game.selectedCards.indices {
+                    // Copy cardView for dynamic animator.
+                    let tempCard: SetCardView = SetCardView()
+                    tempCard.bounds = board.cardViews[selectedIndices[index]].bounds
+                    tempCard.frame = board.cardViews[selectedIndices[index]].frame
+                    tempCard.alpha = 1
+                    tempCard.number = board.cardViews[selectedIndices[index]].number
+                    tempCard.shape = board.cardViews[selectedIndices[index]].shape
+                    tempCard.shading = board.cardViews[selectedIndices[index]].shading
+                    tempCard.color = board.cardViews[selectedIndices[index]].color
+                    tempCard.isFaceUp = true
+                    tempCard.draw(board.bounds)
+                    tempCards.append(tempCard)
+                    board.addSubview(tempCard)
+                    cardBehavior.addItem(tempCard)
+                    // Cards replacement.
                     board.cardViews[selectedIndices[index]].number = game.selectedCards[index].number
                     board.cardViews[selectedIndices[index]].shape = game.selectedCards[index].shape
-                    board.cardViews[selectedIndices[index]].color = game.selectedCards[index].color
                     board.cardViews[selectedIndices[index]].shading = game.selectedCards[index].shading
+                    board.cardViews[selectedIndices[index]].color = game.selectedCards[index].color
                     board.cardViews[selectedIndices[index]].layer.borderColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
                     board.cardViews[selectedIndices[index]].alpha = 1.0
                     board.cardViews[selectedIndices[index]].draw(board.bounds) // Need to call draw method to trim black corners.
@@ -362,8 +392,35 @@ class ViewController: UIViewController {
         }
     }
     
+    public func dynamicAnimatorDidPause(_ animator: UIDynamicAnimator) {
+        tempCards.forEach { (tempCard) in
+            UIView.transition(
+                with: tempCard,
+                duration: 0.2,
+                options: UIView.AnimationOptions.transitionFlipFromRight,
+                animations: {
+                    tempCard.isFaceUp = false
+                },
+                completion: { (_) in
+                    UIViewPropertyAnimator.runningPropertyAnimator(
+                        withDuration: 0.2,
+                        delay: 0.2,
+                        options: UIView.AnimationOptions.curveEaseIn,
+                        animations: {
+                            tempCard.alpha = 0
+                        },
+                        completion: { (_) in
+                            self.cardBehavior.removeItem(tempCard)
+                            tempCard.removeFromSuperview()
+                        }
+                    )
+                }
+            )
+        }
+    }
+    
     /// Uses coloration to indicate whether cards are match or mismatch.
-    func checkAndIndicateCards() {
+    private func checkAndIndicateCards() {
         game.checkSetCards(from: game.selectedCards)
         
         for index in game.selectedCards.indices {
@@ -378,7 +435,20 @@ class ViewController: UIViewController {
                     hintButton.isEnabled = false
                 } else {
                     // Remove matched cards if no more cards in Playing Deck.
-                    // TODO: Correct removing cards from game board.
+                    // Copy cardView for dynamic animator.
+                    let tempCard: SetCardView = SetCardView()
+                    tempCard.bounds = board.cardViews[selectedIndices[index]].bounds
+                    tempCard.frame = board.cardViews[selectedIndices[index]].frame
+                    tempCard.alpha = 1
+                    tempCard.number = board.cardViews[selectedIndices[index]].number
+                    tempCard.shape = board.cardViews[selectedIndices[index]].shape
+                    tempCard.shading = board.cardViews[selectedIndices[index]].shading
+                    tempCard.color = board.cardViews[selectedIndices[index]].color
+                    tempCard.isFaceUp = true
+                    tempCard.draw(board.bounds)
+                    tempCards.append(tempCard)
+                    board.addSubview(tempCard)
+                    cardBehavior.addItem(tempCard)
                     board.cardViews.remove(at: selectedIndices[index])
                     cardsOnScreen.remove(at: selectedIndices[index])
                     hintButton.isEnabled = true
