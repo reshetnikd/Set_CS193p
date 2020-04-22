@@ -13,22 +13,74 @@ class ConcentrationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        chooseTheme(from: themes)
+//        chooseTheme(from: themes)
+        // Remove UITabBar top border line in iPadOS 13.
+        tabBarController?.tabBar.layer.borderWidth = 0
+        tabBarController?.tabBar.clipsToBounds = true
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateViewFromModel()
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateViewFromModel()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        newGameButton.setTitleColor(cardsColor, for: UIControl.State.normal)
+        flipCountLabel.textColor = cardsColor
+        scoreLabel.textColor = cardsColor
     }
     
     private lazy var game: Concentration = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
-    private var emojiChoices: [String] = []
+    
+    private var emojiChoices: String = "👻🎃😈💀🧛🏻‍♂️🦇🕸🕷🧟‍♂️🧙🏻🧞👹"
     private var emoji: [Card:String] = [:]
-    private var buttonColor: UIColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 0)
-    private var themes: [Theme] = [Theme(name: "helloween", emoji: ["👻","🎃","😈","💀","🧛🏻‍♂️","🦇","🧛🏻‍♂️","🕸","🕷"], color: #colorLiteral(red: 0.9952403903, green: 0.7589642406, blue: 0.1794864237, alpha: 1), backgroundColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)),
-    Theme(name: "animals", emoji: ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐵"], color: #colorLiteral(red: 0.721568644, green: 0.8862745166, blue: 0.5921568871, alpha: 1), backgroundColor: #colorLiteral(red: 0.9372549057, green: 0.3490196168, blue: 0.1921568662, alpha: 1)),
-    Theme(name: "sports", emoji: ["⚽️","🏀","🏈","⚾️","🥎","🎾","🏐","🏉","🎱"], color: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0), backgroundColor: #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)),
-    Theme(name: "faces", emoji: ["😁","😊","😅","😆","😂","😎","🤪","🤓","🥳"], color: #colorLiteral(red: 0.9994240403, green: 0.9855536819, blue: 0, alpha: 1), backgroundColor: #colorLiteral(red: 0.4745098054, green: 0.8392156959, blue: 0.9764705896, alpha: 1)),
-    Theme(name: "fruits", emoji: ["🍏","🍐","🍊","🍋","🍌","🍉","🍓","🍑","🥭"], color: #colorLiteral(red: 0.5568627715, green: 0.3529411852, blue: 0.9686274529, alpha: 1), backgroundColor: #colorLiteral(red: 0.5843137503, green: 0.8235294223, blue: 0.4196078479, alpha: 1)),
-    Theme(name: "flowers", emoji: ["💐","🌷","🌹","🥀","🌺","🌸","🌼","🌻","🍀"], color: #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1), backgroundColor: #colorLiteral(red: 0.9098039269, green: 0.4784313738, blue: 0.6431372762, alpha: 1))]
+    private var cardsColor: UIColor = #colorLiteral(red: 0.9952403903, green: 0.7589642406, blue: 0.1794864237, alpha: 1)
+    
+    private var faceUpCards: [UIButton] {
+        return visibleCardButtons.filter { (cardButton) -> Bool in
+            return game.cards[visibleCardButtons.firstIndex(of: cardButton)!].isFaceUp
+        }
+    }
+    
+    private var visibleCardButtons: [UIButton]! {
+        return cardButtons?.filter { (cardButton) -> Bool in
+            !cardButton.superview!.isHidden
+        }
+    }
+    
     var numberOfPairsOfCards: Int {
-        get {
-            return (cardButtons.count + 1) / 2
+        return (visibleCardButtons.count + 1) / 2
+    }
+    
+    var theme: String? {
+        didSet {
+            emojiChoices = theme ?? ""
+            emoji = [:]
+            updateViewFromModel()
+        }
+    }
+    
+    var themeColor: UIColor? {
+        didSet {
+            cardsColor = themeColor ?? #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+            if newGameButton != nil, flipCountLabel != nil, scoreLabel != nil {
+                newGameButton.setTitleColor(themeColor, for: .normal)
+                flipCountLabel.textColor = themeColor
+                scoreLabel.textColor = themeColor
+            }
+            updateViewFromModel()
+        }
+    }
+    
+    var backgroundThemeColor: UIColor? {
+        didSet {
+            self.view.backgroundColor = backgroundThemeColor
+            updateViewFromModel()
         }
     }
     
@@ -38,51 +90,74 @@ class ConcentrationViewController: UIViewController {
     @IBOutlet private var cardButtons: [UIButton]!
     
     @IBAction func newGame(_ sender: UIButton) {
+        emoji.removeAll()
         game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
-        chooseTheme(from: themes)
+        emojiChoices = theme ?? self.emojiChoices
+        cardsColor = themeColor ?? self.cardsColor
+        updateViewFromModel()
     }
     
     @IBAction private func touchCard(_ sender: UIButton) {
-        if let cardNumber = cardButtons.firstIndex(of: sender) {
-            game.chooseCard(at: cardNumber)
-            updateViewFromModel()
+        if let cardNumber = visibleCardButtons.firstIndex(of: sender) {
+            UIView.transition(
+                with: sender,
+                duration: 0.5,
+                options: .transitionFlipFromLeft,
+                animations: {
+                    self.game.chooseCard(at: cardNumber)
+                    self.updateViewFromModel()
+                },
+                completion: { (_) in
+                    if self.faceUpCards.count == 2 {
+                        self.faceUpCards.forEach({ (cardButton) in
+                            UIView.transition(
+                                with: cardButton,
+                                duration: 0.5,
+                                options: .transitionFlipFromLeft,
+                                animations: {
+                                    self.updateViewFromModel()
+                                },
+                                completion: nil
+                            )
+                        })
+                    }
+                }
+            )
         } else {
             print("chosen card was not in cardButtons")
         }
     }
     
     private func updateViewFromModel() {
-        for index in cardButtons.indices {
-            let button = cardButtons[index]
-            let card = game.cards[index]
+        guard visibleCardButtons != nil else {
+            return
+        }
+        
+        for index in visibleCardButtons.indices {
+            let button: UIButton = visibleCardButtons[index]
+            let card: Card = game.cards[index]
             if card.isFaceUp {
-                button.setTitle(emoji(for: card), for: UIControl.State.normal)
-                button.backgroundColor = #colorLiteral(red: 0.9999960065, green: 1, blue: 1, alpha: 1)
+                button.setTitle(emoji(for: card), for: .normal)
+                button.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
             } else {
-                button.setTitle("", for: UIControl.State.normal)
-                button.backgroundColor = card.isMatched ? #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0) : buttonColor
+                button.setTitle("", for: .normal)
+                button.backgroundColor = card.isMatched ? #colorLiteral(red: 0.9952403903, green: 0.7589642406, blue: 0.1794864237, alpha: 0) : cardsColor
             }
         }
-        flipCountLabel.text = "Flips: \(game.flips)"
-        scoreLabel.text = "Score: \(game.score)"
+        
+        scoreLabel.text = traitCollection.verticalSizeClass == UIUserInterfaceSizeClass.compact ? "Score\n\(game.score)" : "Score: \(game.score)"
+        flipCountLabel.text = traitCollection.verticalSizeClass == UIUserInterfaceSizeClass.compact ? "Flips\n\(game.flips)" : "Flips: \(game.flips)"
+        newGameButton.titleLabel?.numberOfLines = 0
+        newGameButton.titleLabel?.textAlignment = NSTextAlignment.center
+        newGameButton.setTitle(traitCollection.verticalSizeClass == UIUserInterfaceSizeClass.compact ? "New\nGame" : "New Game", for: UIControl.State.normal)
     }
     
     private func emoji(for card: Card) -> String {
         if emoji[card] == nil, emojiChoices.count > 0 {
-            emoji[card] = emojiChoices.remove(at: emojiChoices.count.random)
+            let stringIndex = emojiChoices.index(emojiChoices.startIndex, offsetBy: Int.random(in: 0..<emojiChoices.count))
+            emoji[card] = String(emojiChoices.remove(at: stringIndex))
         }
         return emoji[card] ?? "?"
-    }
-    
-    private func chooseTheme(from themes: [Theme]) {
-        let randomIndex = themes.count.random
-        buttonColor = themes[randomIndex].color
-        emojiChoices = themes[randomIndex].emoji
-        scoreLabel.textColor = themes[randomIndex].color
-        flipCountLabel.textColor = themes[randomIndex].color
-        self.view.backgroundColor = themes[randomIndex].backgroundColor
-        newGameButton.setTitleColor(themes[randomIndex].color, for: .normal)
-        updateViewFromModel()
     }
     
 }

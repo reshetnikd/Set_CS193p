@@ -18,6 +18,7 @@
 		3578749B2450639B001D5C79 /* Concentration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357874972450639B001D5C79 /* Concentration.swift */; };
 		3578749C2450639B001D5C79 /* ConcentrationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357874982450639B001D5C79 /* ConcentrationViewController.swift */; };
 		3578749D2450639B001D5C79 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357874992450639B001D5C79 /* Theme.swift */; };
+		357874A024506E3A001D5C79 /* ConcentrationThemeChooserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3578749F24506E3A001D5C79 /* ConcentrationThemeChooserViewController.swift */; };
 		357C018B2448E5BB00E35F10 /* Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C018A2448E5BB00E35F10 /* Grid.swift */; };
 		357C018D2448E73B00E35F10 /* GridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C018C2448E73B00E35F10 /* GridView.swift */; };
 		357C018F2448E7BA00E35F10 /* SetCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 357C018E2448E7BA00E35F10 /* SetCardView.swift */; };
@@ -39,6 +40,7 @@
 		357874972450639B001D5C79 /* Concentration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Concentration.swift; sourceTree = "<group>"; };
 		357874982450639B001D5C79 /* ConcentrationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConcentrationViewController.swift; sourceTree = "<group>"; };
 		357874992450639B001D5C79 /* Theme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		3578749F24506E3A001D5C79 /* ConcentrationThemeChooserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationThemeChooserViewController.swift; sourceTree = "<group>"; };
 		357C018A2448E5BB00E35F10 /* Grid.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Grid.swift; sourceTree = "<group>"; };
 		357C018C2448E73B00E35F10 /* GridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridView.swift; sourceTree = "<group>"; };
 		357C018E2448E7BA00E35F10 /* SetCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetCardView.swift; sourceTree = "<group>"; };
@@ -106,9 +108,10 @@
 			isa = PBXGroup;
 			children = (
 				357874962450639B001D5C79 /* Card.swift */,
-				357874972450639B001D5C79 /* Concentration.swift */,
 				357874992450639B001D5C79 /* Theme.swift */,
+				357874972450639B001D5C79 /* Concentration.swift */,
 				357874982450639B001D5C79 /* ConcentrationViewController.swift */,
+				3578749F24506E3A001D5C79 /* ConcentrationThemeChooserViewController.swift */,
 			);
 			path = ConcentrationGame;
 			sourceTree = "<group>";
@@ -186,6 +189,7 @@
 			files = (
 				3578749B2450639B001D5C79 /* Concentration.swift in Sources */,
 				352BA60C23F7299B00EB2D14 /* SetViewController.swift in Sources */,
+				357874A024506E3A001D5C79 /* ConcentrationThemeChooserViewController.swift in Sources */,
 				352BA60823F7299B00EB2D14 /* AppDelegate.swift in Sources */,
 				3550DC67244DF82700773645 /* CardBehavior.swift in Sources */,
 				3578749D2450639B001D5C79 /* Theme.swift in Sources */,
@@ -350,7 +354,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.stanford.Set;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -368,7 +372,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.stanford.Set;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
