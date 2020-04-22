@@ -20,9 +20,13 @@ class SetCardView: UIView {
         roundedRect.addClip()
         UIColor.white.setFill()
         roundedRect.fill()
-        // Draw figures on self if card isFaceUp.
+        // Draw figures or cardback on self.
         if isFaceUp {
             drawContent()
+        } else {
+            if let cardBackImage = UIImage(named: "cardback", in: Bundle(for: self.classForCoder), compatibleWith: traitCollection) {
+                cardBackImage.draw(in: bounds)
+            }
         }
     }
     

@@ -11,7 +11,6 @@ import Foundation
 struct Concentration {
     
     private(set) var startTime: Date = Date()
-    private(set) var cards: [Card] = []
     private(set) var flips: Int = 0
     private(set) var score: Int = 0
     private var indexOfOneAndOnlyFaceUpCard: Int? {
@@ -26,6 +25,8 @@ struct Concentration {
             }
         }
     }
+    
+    var cards: [Card] = []
     
     mutating func chooseCard(at index: Int) {
         assert(cards.indices.contains(index), "Concentration.chooseCard(at: \(index)): chosen index not in the cards")

@@ -248,6 +248,18 @@ class SetViewController: UIViewController, UIDynamicAnimatorDelegate {
                     selectedIndices[index] = selectedCard
                 }
             }
+            // Spin animation.
+            board.cardViews.forEach { (cardView) in
+                UIView.animate(
+                    withDuration: 0.8,
+                    delay: 0.2,
+                    options: UIView.AnimationOptions.curveLinear,
+                    animations: {
+                        cardView.transform = cardView.transform.rotated(by: CGFloat.pi)
+                    },
+                    completion: nil
+                )
+            }
         default:
             break
         }

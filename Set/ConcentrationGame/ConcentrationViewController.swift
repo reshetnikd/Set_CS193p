@@ -94,6 +94,13 @@ class ConcentrationViewController: UIViewController {
         game = Concentration(numberOfPairsOfCards: numberOfPairsOfCards)
         emojiChoices = theme ?? self.emojiChoices
         cardsColor = themeColor ?? self.cardsColor
+        
+        for index in visibleCardButtons.indices {
+            game.cards[index].isFaceUp = false
+            game.cards[index].isMatched = false
+            game.cards[index].isInvolvedInMismatch = false
+        }
+        
         updateViewFromModel()
     }
     
@@ -115,6 +122,7 @@ class ConcentrationViewController: UIViewController {
                                 duration: 0.5,
                                 options: .transitionFlipFromLeft,
                                 animations: {
+                                    self.game.cards[self.visibleCardButtons.firstIndex(of: cardButton)!].isFaceUp = false
                                     self.updateViewFromModel()
                                 },
                                 completion: nil
