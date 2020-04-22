@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UIDynamicAnimatorDelegate {
+class SetViewController: UIViewController, UIDynamicAnimatorDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
